@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  height: 100%;
+  width: 100%;
+}
+
+frigate-card-media-carousel {
+  flex: 1;
+  min-height: 0;
+}
+
+frigate-card-thumbnail-carousel-core {
+  flex: 0 0 var(--frigate-card-carousel-thumbnail-size);
+}
