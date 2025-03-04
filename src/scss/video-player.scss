@@ -1,0 +1,10 @@
+@use 'basic-block.scss';
+@use 'media-layout.scss';
+
+video {
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  @include media-layout.media-layout();
+}
