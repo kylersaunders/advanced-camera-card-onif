@@ -26,6 +26,7 @@ export enum Engine {
   Frigate = 'frigate',
   Generic = 'generic',
   MotionEye = 'motioneye',
+  ONVIF = 'onvif',
   Reolink = 'reolink',
   TPLink = 'tplink',
 }
