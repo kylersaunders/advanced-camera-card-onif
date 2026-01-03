@@ -93,6 +93,7 @@ const ENGINES = [
   'frigate',
   'generic',
   'motioneye',
+  'onvif',
   'reolink',
   'tplink',
 ] as const;

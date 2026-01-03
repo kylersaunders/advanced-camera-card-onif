@@ -86,6 +86,14 @@ export class CameraManagerEngineFactory {
           options.eventCallback,
         );
         break;
+      case Engine.ONVIF:
+        const { ONVIFCameraManagerEngine } = await import('./onvif/engine-onvif');
+        cameraManagerEngine = new ONVIFCameraManagerEngine(
+          this._entityRegistryManager,
+          options.stateWatcher,
+          options.eventCallback,
+        );
+        break;
     }
     return cameraManagerEngine;
   }
@@ -105,6 +113,8 @@ export class CameraManagerEngineFactory {
       engine = Engine.Reolink;
     } else if (cameraConfig.engine === 'tplink') {
       engine = Engine.TPLink;
+    } else if (cameraConfig.engine === 'onvif') {
+      engine = Engine.ONVIF;
     } else {
       const cameraEntity = getCameraEntityFromConfig(cameraConfig);
 
@@ -135,6 +145,9 @@ export class CameraManagerEngineFactory {
             break;
           case 'tplink':
             engine = Engine.TPLink;
+            break;
+          case 'onvif':
+            engine = Engine.ONVIF;
             break;
           default:
             engine = Engine.Generic;

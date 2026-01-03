@@ -5,10 +5,12 @@ import { FrigateCameraManagerEngine } from '../../src/camera-manager/frigate/eng
 import { GenericCameraManagerEngine } from '../../src/camera-manager/generic/engine-generic';
 import { MotionEyeCameraManagerEngine } from '../../src/camera-manager/motioneye/engine-motioneye';
 import { ReolinkCameraManagerEngine } from '../../src/camera-manager/reolink/engine-reolink.js';
+import { ONVIFCameraManagerEngine } from '../../src/camera-manager/onvif/engine-onvif.js';
 import { TPLinkCameraManagerEngine } from '../../src/camera-manager/tplink/engine-tplink.js';
 import { Engine } from '../../src/camera-manager/types.js';
 import { StateWatcherSubscriptionInterface } from '../../src/card-controller/hass/state-watcher.js';
 import { CardWideConfig } from '../../src/config/schema/types.js';
+import { DeviceRegistryManager } from '../../src/ha/registry/device';
 import { EntityRegistryManager } from '../../src/ha/registry/entity/types.js';
 import { ResolvedMediaCache } from '../../src/ha/resolved-media.js';
 import { EntityRegistryManagerMock } from '../ha/registry/entity/mock.js';
@@ -24,10 +26,12 @@ vi.mock('../../src/utils/ha/entity-registry/cache');
 
 const createFactory = (options?: {
   entityRegistryManager?: EntityRegistryManager;
+  deviceRegistryManager?: DeviceRegistryManager;
   cardWideConfig?: CardWideConfig;
 }): CameraManagerEngineFactory => {
   return new CameraManagerEngineFactory(
     options?.entityRegistryManager ?? new EntityRegistryManagerMock(),
+    options?.deviceRegistryManager ?? mock<DeviceRegistryManager>(),
   );
 };
 
@@ -126,6 +130,28 @@ describe('getEngineForCamera()', () => {
           entityRegistryManager: entityRegistryManager,
         }).getEngineForCamera(createHASS(), config),
       ).toBe(Engine.TPLink);
+    });
+  });
+
+  describe('should get an onvif camera', () => {
+    it('from manually set engine', async () => {
+      const config = createCameraConfig({ engine: 'onvif' });
+      expect(await createFactory().getEngineForCamera(createHASS(), config)).toBe(
+        Engine.ONVIF,
+      );
+    });
+
+    it('from auto detection', async () => {
+      const config = createCameraConfig({ engine: 'auto', camera_entity: 'camera.foo' });
+      const entityRegistryManager = new EntityRegistryManagerMock([
+        createRegistryEntity({ entity_id: 'camera.foo', platform: 'onvif' }),
+      ]);
+
+      expect(
+        await createFactory({
+          entityRegistryManager: entityRegistryManager,
+        }).getEngineForCamera(createHASS(), config),
+      ).toBe(Engine.ONVIF);
     });
   });
 
@@ -265,5 +291,13 @@ describe('createEngine()', () => {
         resolvedMediaCache: mock<ResolvedMediaCache>(),
       }),
     ).toBeInstanceOf(TPLinkCameraManagerEngine);
+  });
+  it('should create onvif engine', async () => {
+    expect(
+      await createFactory().createEngine(Engine.ONVIF, {
+        stateWatcher: mock<StateWatcherSubscriptionInterface>(),
+        resolvedMediaCache: mock<ResolvedMediaCache>(),
+      }),
+    ).toBeInstanceOf(ONVIFCameraManagerEngine);
   });
 });
